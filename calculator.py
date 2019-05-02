@@ -5,10 +5,10 @@ calculator = tkinter.Tk()
 calculator.geometry("600x300")
 
 # Frames
-home_screen = tkinter.Frame(calculator, bg="blue", width=600, height=300)
+home_screen = tkinter.Frame(calculator, width=600, height=300)
 home_screen.grid_propagate(False)
 home_screen.grid(row=0, column=0, sticky="nsew")
-config_screen = tkinter.Frame(calculator, bg="red")
+config_screen = tkinter.Frame(calculator)
 config_screen.grid(row=0, column=0, sticky="nsew")
 
 # Brings the home frame to the front
@@ -20,6 +20,7 @@ def showHome():
 def showConfig():
     config_screen.tkraise()
 
+# -------------------------------------------
 # Main screen
 number_1 = None
 operator = None
@@ -211,5 +212,103 @@ for key, value in calc_buttons.items():
 equals_button = tkinter.Button(home_screen, text="=", width=18, height=2, command=onEqualsButtonClick)
 equals_button.grid(row=7, column=3, columnspan=2)
 calc_widgets.append(equals_button)
+
+# -------------------------------------------
+# Configuration screen
+colors = ["R", "G", "B"]
+default_colors = [
+    {"name": "Dark", "bg": "black", "fg": "white"},
+    {"name": "Light", "bg": "white", "fg": "black"}
+]
+dc_value = tkinter.IntVar(config_screen)
+dc_value.set(1)
+
+# Config operations
+def changeThemeDefault():
+    theme = default_colors[dc_value.get()]
+    home_screen.config(bg=theme["bg"])
+    config_screen.config(bg=theme["bg"])
+    for cw in calc_widgets:
+        cw.config(bg=theme["bg"], fg=theme["fg"])
+    for cw in config_widgets:
+        cw.config(bg=theme["bg"], fg=theme["fg"])
+
+def changeThemeAdvanced():
+    bg_values = []
+    fg_values = []
+    for i in range(3):
+        try:
+            bg_entry = entry_widgets[i].get()
+            if bg_entry == "":
+                bg_entry = 255
+            bg_entry = int(bg_entry)
+            if bg_entry > 255:
+                raise ValueError
+            fg_entry = entry_widgets[i+3].get()
+            if fg_entry == "":
+                fg_entry = 0
+            fg_entry = int(fg_entry)
+            if fg_entry > 255:
+                raise ValueError
+            bg_values.append(str(hex(bg_entry))[2:].zfill(2))
+            fg_values.append(str(hex(fg_entry))[2:].zfill(2))
+        except ValueError:
+            advanced_note_label.config(text="ERROR: Invalid value")
+            return
+    
+    bgcolor = "#" + "".join(bg_values)
+    fgcolor = "#" + "".join(fg_values)
+    home_screen.config(bg=bgcolor)
+    config_screen.config(bg=bgcolor)
+    for cw in calc_widgets:
+        cw.config(bg=bgcolor, fg=fgcolor)
+    for cw in config_widgets:
+        cw.config(bg=bgcolor, fg=fgcolor)
+    advanced_note_label.config(text="Enter numbers between 0-255.")
+
+# Config widgets and buttons
+config_widgets = []
+entry_widgets = []
+
+# Config UI widgets
+# Default
+return_button = tkinter.Button(config_screen, text="Return to home", command=showHome)
+return_button.grid(row=0, column=0, columnspan=6)
+config_widgets.append(return_button)
+default_label = tkinter.Label(config_screen, text="---------- Default ----------")
+default_label.grid(row=1, column=0, columnspan=6)
+config_widgets.append(default_label)
+
+config_row = 2
+for theme in default_colors:
+    radio_button = tkinter.Radiobutton(config_screen, text=theme["name"], variable=dc_value, value=config_row-2)
+    radio_button.grid(row=config_row, column=0, columnspan=6)
+    config_widgets.append(radio_button)
+    config_row += 1
+
+change_color_default_button = tkinter.Button(config_screen, text="Change color theme", command=changeThemeDefault)
+change_color_default_button.grid(row=config_row, column=0, columnspan=6)
+config_widgets.append(change_color_default_button)
+
+# Advanced
+advanced_label = tkinter.Label(config_screen, text="---------- Advanced ----------")
+advanced_label.grid(row=config_row+1, column=0, columnspan=6)
+config_widgets.append(advanced_label)
+for i in range(2,4):
+    for j in range(6):
+        if (j % 2 == 0):
+            widget = tkinter.Label(config_screen, text=colors[int(j/2)])
+        else:
+            widget = tkinter.Entry(config_screen, width=10)
+            entry_widgets.append(widget)
+        widget.grid(row=config_row+i, column=j)
+        config_widgets.append(widget)
+
+change_color_advanced_button = tkinter.Button(config_screen, text="Change color theme", command=changeThemeAdvanced)
+change_color_advanced_button.grid(row=config_row+4, column=0, columnspan=6)
+config_widgets.append(change_color_advanced_button)
+advanced_note_label = tkinter.Label(config_screen, text="Enter numbers between 0-255.")
+advanced_note_label.grid(row=config_row+5, column=0, columnspan=6)
+config_widgets.append(advanced_note_label)
 
 calculator.mainloop()
