@@ -1,8 +1,9 @@
 import tkinter
+from math import sqrt
 
 # Root
 calculator = tkinter.Tk()
-calculator.geometry("600x300")
+calculator.geometry("400x350")
 
 # Frames
 home_screen = tkinter.Frame(calculator, width=600, height=300)
@@ -61,13 +62,13 @@ def onBackspaceClick():
 
 def onMemorySetClick():
     global memory
-    if len(calc_output) != 0:
+    if len(calc_output) > 0:
         memory = float(calc_output)
-    elif len(user_input) != 0:
-        if user_input[-1:] == ".":
-            memory = float(user_input[:-1])
-        else:
-            memory = float(user_input)
+    elif len(user_input) > 0:
+        res = cleanUserInput()
+        if res == False:
+            return
+        memory = user_input
     elif number_1 != None:
         memory = number_1
 
@@ -80,7 +81,24 @@ def onMemoryRecallClick():
         input_label.config(text=calc_input+user_input)
 
 def onPercentClick():
-    pass
+    global user_input
+    global calc_output
+    if len(user_input) > 0:
+        res = cleanUserInput()
+        if res == False:
+            return
+        if number_1 == None:
+            calc_output = str(float(calc_output)/100)
+            input_label.config(text=user_input+"% =")
+            output_label.config(text=calc_output)
+            user_input = ""
+            clear_next = True
+        else:
+            user_input = str(float(user_input) / 100)
+            input_label.config(text=calc_input+user_input)
+    elif len(calc_output) > 0:
+        input_label.config(text=calc_output+"% =")
+        output_label.config(text=str(float(calc_output)/100))
 
 def onNumpadClick(n):
     global user_input
@@ -89,19 +107,57 @@ def onNumpadClick(n):
     input_label.config(text=calc_input+user_input)
 
 def onSqrtClick():
-    pass
+    global user_input
+    global calc_output
+    if (number_1 != None and number_1 < 0):
+        return
+    if len(user_input) > 0:
+        res = cleanUserInput()
+        if res == False:
+            return
+        if number_1 == None:
+            calc_output = str(sqrt(float(user_input)))
+            input_label.config(text="√"+user_input+" =")
+            output_label.config(text=calc_output)
+            user_input = ""
+            clear_next = True
+        else:
+            user_input = str(sqrt(float(user_input)))
+            input_label.config(text=calc_input+user_input)
+    elif len(calc_output) > 0:
+        input_label.config(text="√"+calc_output+" =")
+        output_label.config(text=str(sqrt(float(calc_output))))
 
 def onSquareClick():
-    pass
+    global user_input
+    global calc_output
+    if len(user_input) > 0:
+        res = cleanUserInput()
+        if res == False:
+            return
+        if number_1 == None:
+            calc_output = str(float(user_input) ** 2)
+            input_label.config(text=user_input+"^2 =")
+            output_label.config(text=calc_output)
+            user_input = ""
+            clear_next = True
+        else:
+            user_input = str(float(user_input) ** 2)
+            input_label.config(text=calc_input+user_input)
+    elif len(calc_output) > 0:
+        input_label.config(text=calc_output+"^2 =")
+        output_label.config(text=str(float(calc_output)**2))
 
 def onOperatorClick(op):
-    global user_input
-    global calc_input
     global number_1
     global operator
+    global user_input
+    global calc_input
+    global clear_next
     if len(user_input) > 0:
-        if user_input[-1:] == ".":
-            user_input = user_input[:-1]
+        res = cleanUserInput()
+        if res == False:
+            return
         if number_1:
             number_1 = evalExpression(operator, number_1, float(user_input))
             calc_input = str(number_1) + " " + op + " "
@@ -109,6 +165,11 @@ def onOperatorClick(op):
             number_1 = float(user_input)
             calc_input = user_input + " " + op + " "
         user_input = ""
+    elif len(calc_output) > 0:
+        number_1 = float(calc_output)
+        calc_input = calc_output + " " + op + " "
+        user_input = ""
+        clear_next = False
     else:
         calc_input = calc_input[:-3] + " " + op + " "
     operator = op
@@ -131,14 +192,14 @@ def onDecimalClick():
         user_input = new_user_input
     input_label.config(text=calc_input+user_input)
 
-
 def onEqualsButtonClick():
     global user_input
     global calc_output
     global clear_next
     if len(user_input) > 0:
-        if user_input[-1:] == ".":
-            user_input = user_input[:-1]
+        res = cleanUserInput()
+        if res == False:
+            return
         if number_1:
             input_label.config(text=calc_input+user_input+" =")
             calc_output = str(evalExpression(operator, number_1, float(user_input)))
@@ -146,7 +207,19 @@ def onEqualsButtonClick():
             input_label.config(text=user_input+" =")
             calc_output = str(user_input)
         output_label.config(text=calc_output)
+        user_input = ""
         clear_next = True
+
+def cleanUserInput():
+    global user_input
+    if user_input[0] == "-":
+        user_input = user_input[1:]
+    if user_input[-1:] == ".":
+        user_input = user_input[:-1]
+    if len(user_input) > 0:
+        return True
+    else:
+        return False
 
 def evalExpression(op, num1, num2):
     if op == "+":
@@ -273,27 +346,34 @@ entry_widgets = []
 # Config UI widgets
 # Default
 return_button = tkinter.Button(config_screen, text="Return to home", command=showHome)
-return_button.grid(row=0, column=0, columnspan=6)
+return_button.grid(row=0, column=0, columnspan=7)
 config_widgets.append(return_button)
 default_label = tkinter.Label(config_screen, text="---------- Default ----------")
-default_label.grid(row=1, column=0, columnspan=6)
+default_label.grid(row=1, column=0, columnspan=7)
 config_widgets.append(default_label)
 
 config_row = 2
 for theme in default_colors:
     radio_button = tkinter.Radiobutton(config_screen, text=theme["name"], variable=dc_value, value=config_row-2)
-    radio_button.grid(row=config_row, column=0, columnspan=6)
+    radio_button.grid(row=config_row, column=0, columnspan=7)
     config_widgets.append(radio_button)
     config_row += 1
 
 change_color_default_button = tkinter.Button(config_screen, text="Change color theme", command=changeThemeDefault)
-change_color_default_button.grid(row=config_row, column=0, columnspan=6)
+change_color_default_button.grid(row=config_row, column=0, columnspan=7)
 config_widgets.append(change_color_default_button)
 
 # Advanced
 advanced_label = tkinter.Label(config_screen, text="---------- Advanced ----------")
-advanced_label.grid(row=config_row+1, column=0, columnspan=6)
+advanced_label.grid(row=config_row+1, column=0, columnspan=7)
 config_widgets.append(advanced_label)
+bg_label = tkinter.Label(config_screen, text="Background")
+bg_label.grid(row=config_row+2, column=0)
+config_widgets.append(bg_label)
+fg_label = tkinter.Label(config_screen, text="Text color")
+fg_label.grid(row=config_row+3, column=0)
+config_widgets.append(fg_label)
+
 for i in range(2,4):
     for j in range(6):
         if (j % 2 == 0):
@@ -301,14 +381,14 @@ for i in range(2,4):
         else:
             widget = tkinter.Entry(config_screen, width=10)
             entry_widgets.append(widget)
-        widget.grid(row=config_row+i, column=j)
+        widget.grid(row=config_row+i, column=j+1)
         config_widgets.append(widget)
 
 change_color_advanced_button = tkinter.Button(config_screen, text="Change color theme", command=changeThemeAdvanced)
-change_color_advanced_button.grid(row=config_row+4, column=0, columnspan=6)
+change_color_advanced_button.grid(row=config_row+4, column=0, columnspan=7)
 config_widgets.append(change_color_advanced_button)
 advanced_note_label = tkinter.Label(config_screen, text="Enter numbers between 0-255.")
-advanced_note_label.grid(row=config_row+5, column=0, columnspan=6)
+advanced_note_label.grid(row=config_row+5, column=0, columnspan=7)
 config_widgets.append(advanced_note_label)
 
 calculator.mainloop()
