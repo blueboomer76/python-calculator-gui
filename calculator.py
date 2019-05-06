@@ -3,10 +3,10 @@ from math import sqrt
 
 # Root
 calculator = tkinter.Tk()
-calculator.geometry("400x350")
+calculator.geometry("450x350")
 
 # Frames
-home_screen = tkinter.Frame(calculator, width=600, height=300)
+home_screen = tkinter.Frame(calculator, width=450, height=350)
 home_screen.grid_propagate(False)
 home_screen.grid(row=0, column=0, sticky="nsew")
 config_screen = tkinter.Frame(calculator)
@@ -74,7 +74,6 @@ def onMemorySetClick():
 
 def onMemoryRecallClick():
     global user_input
-    global memory
     if memory != None:
         checkClear()
         user_input = str(memory)
@@ -109,6 +108,7 @@ def onNumpadClick(n):
 def onSqrtClick():
     global user_input
     global calc_output
+    global clear_next
     if (number_1 != None and number_1 < 0):
         return
     if len(user_input) > 0:
@@ -131,6 +131,7 @@ def onSqrtClick():
 def onSquareClick():
     global user_input
     global calc_output
+    global clear_next
     if len(user_input) > 0:
         res = cleanUserInput()
         if res == False:
@@ -266,7 +267,7 @@ calc_widgets.append(theme_button)
 input_label = tkinter.Label(home_screen, text="This is the input", anchor="e")
 input_label.grid(column=0, row=1, columnspan=5)
 calc_widgets.append(input_label)
-output_label = tkinter.Label(home_screen, text="This is the output", anchor="e", font=(None, 18))
+output_label = tkinter.Label(home_screen, text="This is the output", anchor="e", font=(None, 24))
 output_label.grid(column=0, row=2, columnspan=5)
 calc_widgets.append(output_label)
 
@@ -274,7 +275,7 @@ calc_widgets.append(output_label)
 i = 0
 row = 3
 for key, value in calc_buttons.items():
-    button = tkinter.Button(home_screen, text=key, width=8, height=2, command=value)
+    button = tkinter.Button(home_screen, text=key, width=5, font=(None, 18), command=value)
     button.grid(row=row, column=i)
     calc_widgets.append(button)
     i += 1
@@ -282,7 +283,7 @@ for key, value in calc_buttons.items():
         i = 0
         row += 1
 
-equals_button = tkinter.Button(home_screen, text="=", width=18, height=2, command=onEqualsButtonClick)
+equals_button = tkinter.Button(home_screen, text="=", width=11, font=(None, 18), command=onEqualsButtonClick)
 equals_button.grid(row=7, column=3, columnspan=2)
 calc_widgets.append(equals_button)
 
@@ -290,11 +291,15 @@ calc_widgets.append(equals_button)
 # Configuration screen
 colors = ["R", "G", "B"]
 default_colors = [
+    {"name": "Light", "bg": "white", "fg": "black"},
     {"name": "Dark", "bg": "black", "fg": "white"},
-    {"name": "Light", "bg": "white", "fg": "black"}
+    {"name": "Warm", "bg": "#ff6600", "fg": "#ffff99"},
+    {"name": "Cool", "bg": "#66ffff", "fg": "#000099"},
+    {"name": "Romantic", "bg": "#ff66ff", "fg": "#660099"},
+    {"name": "Lively", "bg": "#009900", "fg": "#ffff00"}
 ]
 dc_value = tkinter.IntVar(config_screen)
-dc_value.set(1)
+dc_value.set(0)
 
 # Config operations
 def changeThemeDefault():
